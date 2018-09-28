@@ -31,36 +31,18 @@ before_build:
     - perl ..\Configure %TARGET% %SHARED%
     - perl configdata.pm --dump
     - cd ..
-    - ps: >-
-        if (-not $env:APPVEYOR_PULL_REQUEST_NUMBER`
-            -or (&git log -2 | Select-String "\[extended tests\]") ) {
-            $env:EXTENDED_TESTS="yes"
-        }
 
 build_script:
     - cd _build
-    - ps: >-
-        If ($env:Configuration -Match "shared" -or $env:EXTENDED_TESTS) {
-            cmd /c "nmake build_all_generated 2>&1"
-            cmd /c "nmake PERL=no-perl 2>&1"
-        }
+    - nmake build_all_generated 2>&1
+    - nmake PERL=no-perl 2>&1
     - cd ..
 
 test_script:
     - cd _build
-    - ps: >-
-        If ($env:Configuration -Match "shared" -or $env:EXTENDED_TESTS) {
-            if ($env:EXTENDED_TESTS) {
-                cmd /c "nmake test V=1 2>&1"
-            } Else {
-                cmd /c "nmake test V=1 TESTS=-test_fuzz 2>&1"
-            }
-        }
-    - ps: >-
-        If ($env:Configuration -Match "shared" -or $env:EXTENDED_TESTS) {
-            mkdir ..\install$env:VSVER
-            nmake install DESTDIR=..\install$env:VSVER 2>&1
-        }
+    - nmake test V=1 2>&1
+    - mkdir ..\install%VSVER%
+    - nmake install DESTDIR=..\install%VSVER% 2>&1
     - cd ..
 
 artifacts:
