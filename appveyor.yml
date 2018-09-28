@@ -1,15 +1,13 @@
-platform:
-    - x64
-    - x86
+platform: x64
 
 environment:
-    fast_finish: true
-    matrix:
-        - VSVER: 14
+  fast_finish: true
+  matrix:
+    - VSVER: 12
+    - VSVER: 14
 
 configuration:
     - shared
-    - plain
 
 before_build:
     - ps: >-
@@ -59,8 +57,11 @@ test_script:
             }
         }
     - ps: >-
-        if ($env:EXTENDED_TESTS) {
-            mkdir ..\_install
-            cmd /c "nmake install DESTDIR=..\_install 2>&1"
+        If ($env:Configuration -Match "shared" -or $env:EXTENDED_TESTS) {
+            mkdir ..\install$env:VSVER
+            nmake install DESTDIR=..\install$env:VSVER 2>&1
         }
     - cd ..
+
+artifacts:
+  - path: install%VSVER%
